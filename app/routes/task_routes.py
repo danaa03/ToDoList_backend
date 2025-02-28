@@ -9,9 +9,7 @@ task_bp = Blueprint("tasks", __name__)
 @task_bp.route("/", methods=["GET"])
 @jwt_required()
 def get_tasks():
-    print("get_tasks isidsiu")
     current_user = get_jwt_identity()
-    print("dsdsdsddsds",current_user)
     tasks = db.session.query(Task).filter(Task.user_id == current_user).all()
     return jsonify([{"id": task.id, "title": task.title, "completed": task.completed, "user_id": task.user_id} for task in tasks])
 
@@ -35,3 +33,26 @@ def add_task():
     db.session.commit()
 
     return jsonify({"message": "Task added successfully!", "task": {"id": new_task.id, "title": new_task.title, "user_id": new_task.user_id}})
+
+@task_bp.route("/delete-task", methods=["POST"])
+@jwt_required()
+def delete_task():
+    current_user = get_jwt_identity()
+    data = request.json
+    user_id = current_user
+    title = data.get("title")
+
+    if not title:
+        return jsonify({"message": "Task Title is required"}), 400
+    
+    if not user_id:
+        return jsonify({"message": "User is required"}), 400
+    
+
+    record_to_delete = db.session.query(Task).filter_by(title=title).first()
+    if not record_to_delete:
+        return jsonify({"message": "Task not found"}), 404
+    db.session.delete(record_to_delete)
+    db.session.commit()
+
+    return jsonify({"message": "Task deleted successfully!"})
