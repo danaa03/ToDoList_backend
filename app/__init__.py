@@ -11,6 +11,7 @@ def create_app():
     app.config.from_object("app.config.Config")
     db.init_app(app)
     jwt = JWTManager(app)
+    jwt.init_app(app)
 
     app.register_blueprint(task_bp, url_prefix='/tasks')
     app.register_blueprint(user_bp, url_prefix='/users')
